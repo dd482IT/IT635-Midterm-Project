@@ -4,38 +4,30 @@ conn = psycopg2.connect("postgresql://banker:password123@localhost/midterm")
 cur = conn.cursor()
 
 print("connected")
-postgreSQL_select_Query = "select * from clients"
-cur.execute(postgreSQL_select_Query)
-response = cur.fetchone()
-print(response)
 
-exit()  
-# Register Function 
+# Register Function
 
+def  register():
+	print("Please Insert your User Name")
+	user_name=input()
+	print("Please Insert your First Name")
+	first_name=input()
+	print("Please Insert your Last Name")
+	last_name=input()
 cur.execute("""
-        INSERT INTO rental (rental_date, inventory_id, customer_id, return_date, staff_id)
-        VALUES (NOW(), %s, %s, NOW() + INTERVAL '7 DAYS', %s)
-        RETURNING rental_id;
-    """, (inventory_id, customer_id, staff_id));
+        INSERT INTO clients (user_name, first_name, last_name, created_at)
+   	VALUES (%s, %s, %s,NOW())
+        RETURNING client_id; 
+""",(user_name, first_name, last_name));
+	client_id = cur.fetchone()[0]
+cur.execute("""
+	INSERT INTO accounts (account_id, client_id, balance, created_at)
+	VALUES (%s, %s, %s, NOW())
+""",(1111, client_id, 0);
 
 # Transfer Function 
 
 # Deposit Function
-
-
-
-
-
-while True:
-    print("Please enter inventory ID")
-    inventory_id = int(input())
-    print("Please enter customer ID")
-    customer_id = int(input())
-    print("Please enter staff ID")
-    staff_id = int(input())
-    rental_id = cur.fetchone()[0]
-    print(f"Rental submitted: ID {rental_id}")
-    conn.commit()
 
 cur.close()
 conn.close()
