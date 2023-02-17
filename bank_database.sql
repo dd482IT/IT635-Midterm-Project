@@ -1,5 +1,5 @@
 CREATE TABLE "clients" (
-  "client_id" AUTOINCREMENT(1,1) PRIMARY KEY,
+  "client_id" INT IDENTITY(1,1) PRIMARY KEY,
   "user_name" varchar(255),
   "first_Name" varchar(255),
   "last_Name" varchar(255),
@@ -9,7 +9,7 @@ CREATE TABLE "clients" (
 
 CREATE TABLE "accounts" (
   "acccount_id" int PRIMARY KEY,
-  "client_id" int FOREIGN KEY,
+  "client_id" int REFERENCES clients(client_id),
   "balance" int,
   "created_at" timestamp DEFAULT 'now()'
 );
