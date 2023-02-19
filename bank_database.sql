@@ -20,7 +20,7 @@ CREATE TABLE "transactions" (
   "created_at" timestamptz DEFAULT 'now()'
 );
 
-ALTER TABLE "accounts" ADD FOREIGN KEY ("client_id") REFERENCES "clients" ("user_name");
+ALTER TABLE "accounts" ADD FOREIGN KEY ("client_id") REFERENCES "clients" ("client_id");
 
 ALTER TABLE "transactions" ADD FOREIGN KEY ("from_id") REFERENCES "accounts" ("acccount_id");
 
