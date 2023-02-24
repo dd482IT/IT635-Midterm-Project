@@ -15,15 +15,22 @@ def register():
 		""", (USER_NAME,));
 	conn.commit()
 
-# Transfer Function 
-
-def create_account():
+def login():
 	print("Please provide your username")
 	USER_NAME = input()
 	cur.execute("""
 		SELECT client_id FROM clients WHERE user_name = %s
 		""", (USER_NAME,));
-	client_id = cur.fetchone()[0]
+	client_id = cur.fetchone()
+	if not client_id == None:
+		print("Account was found")
+		return client_id[0]
+	else:
+		print("Account does not exist")
+# Transfer Function 
+
+def create_account():
+	client_id = login()
 	print(client_id)
 	conn.commit()
 	print("Would you like to make an inital depost?[Y/N]")
@@ -42,7 +49,7 @@ def create_account():
 	cur.execute("""
 		INSERT INTO accounts (acccount_id, client_id, balance) 
 		VALUES (%s, %s, %s)
-		""", (123456789, client_id, AMOUNT,));
+		""", (123456789, client_id, AMOUNT,)); # Should the account ID be generated locally or on the DB?
 	conn.commit()
 	print("Account Created")
 
@@ -64,7 +71,6 @@ def getAccountInfo():
 #	""", (account_id, client_id, balance));
 
 create_account()
-
 
 cur.close()
 conn.close()
