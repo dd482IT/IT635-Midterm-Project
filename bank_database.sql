@@ -5,9 +5,10 @@ CREATE TABLE "clients" (
 );
 
 CREATE TABLE "accounts" (
-  "acccount_id" int PRIMARY KEY,
+  "account_id" int PRIMARY KEY,
   "client_id" int,
   "balance" int,
+  "type" varchar,
   "created_at" timestamp DEFAULT 'now()'
 );
 
