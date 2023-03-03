@@ -79,20 +79,43 @@ def deposit():
 		user_input = input()
 		try:
 			AMOUNT = int(user_input)
-			print("You entered: " + str(AMOUNT))
 			break
 		except ValueError:
 			print("Not a number, please try again")
 			continue
 	cur.execute("""
-		SELECT account_id FROM accounts WHERE client_id = %s
-		VALUES (%s) 
-		""", (client_id,)); 
-	accounts = cur.fetchone()[0]
-	if(len(accounts) == 0):
-		return accounts
+		SELECT account_id, type, balance FROM accounts WHERE client_id = %s
+		""", (client_id,));
+	accounts = cur.fetchall()
+	numberOfAccounts = len(accounts)
+	if numberOfAccounts == 0:
+		print("Please make an account")
+	elif numberOfAccounts == 1:
+		ACCOUNT = accounts[0][0]
 	else:
-		return "No Accounts"
+		while True: 
+			ACCOUNT_BALANCE_DICT = {}
+			print("Please choose an account to deposit too")
+			for account in accounts:
+				ACCOUNT_BALANCE_DICT[account[0]] = account[2]
+				print(account)
+			ACCOUNT_CHOICE = input()
+			ACCOUNT_NUMS = ACCOUNT_BALANCE_DICT.keys() # need to check if account number is real
+			print(ACCOUNT_NUMS)
+			if ACCOUNT_CHOICE not in ACCOUNT_NUMS:
+				print("Account not found, please try again")
+				continue
+			else:
+				ACCOUNT = ACCOUNT_CHOICE
+				BALANCE = ACCOUNT_BALANCE_DICT.get(ACCOUNT_CHOICE)
+				print(ACCOUNT + "" + BALANCE)
+
+	
+				
+		
+
+
+
 	
 # Credit
 #https://stackoverflow.com/questions/13496087/python-how-to-generate-a-12-digit-random-number
