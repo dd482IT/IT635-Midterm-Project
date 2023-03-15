@@ -28,10 +28,42 @@ def login():
 	else:
 		print("Account does not exist ,Please Register!")
 
+def get_accounts(client_id):
+	cur.execute("""
+		SELECT account_id FROM accounts WHERE client_id = %s
+		""", (client_id,));
+	ACCOUNTS_RAW = cur.fetchall()
+	accounts = []
+	if len(ACCOUNTS_RAW) > 1:
+			for ACCOUNT_TUPLE in ACCOUNTS_RAW:
+				for account in ACCOUNT_TUPLE:
+					print(account)
+					accounts.append(account)
+	print(accounts)
+	while(True):
+		choice = int(input("Which account would you like to manage:"))
+		if choice in accounts:
+			return choice
+		else:
+			print("Account does not exist, please try again:")
+			continue
+	account = accounts[0]
+	return accounts[0]
+
+def getBalance(account):
+	cur.execute("""
+		SELECT balance FROM accounts WHERE account_id = %s
+		""", (account,));
+	conn.commit()
+	balance = cur.fetchone()
+	print(balance[0])
+	return balance [0]
+	
 def create_account():
 	client_id = login()
 	print(client_id)
 	conn.commit()
+	# Check if user already has a account (for simplicity), if yes, exit
 	AMOUNT = 0
 	ACCOUNT_NUMBER = generateAccNumber(6, leading_zeroes=False) # Should check if already exists but ... im lazy.
 	while True:
@@ -69,10 +101,40 @@ def create_account():
 	print("Account Created")
 
 def transfer():
-	pass
+	DST_ACCOUNT = input("Enter the account number for the destination account:")
+	cur.execute("""
+		SELECT client_id FROM accounts WHERE account_id = %s
+		VALUES (%s)
+		""", (DST_ACCOUNT,)); # Should the account ID be generated locally or on the DB?
+	conn.commit()
+	DST_ACCOUNT = cur.fetchone[0]
+	if DST_ACCOUNT == "":
+		print("Account does not exist, please try again")
+	SRC_ACCOUNT = get_accounts()
+	SRC_BALANCE = getBalance(SRC_ACCOUNT)
+	if SRC_BALANCE <= 0:
+		print("You cannot make a transfer from this account, please visit the bank")
+		return
+	# Subtract from SRC ACCOUNT  
+	cur.execute("""
+		UPDATE accounts SET balance = balance - %s WHERE account_id = %s;
+		""", (AMOUNT, SRC_ACCOUNT,));
+	# Add to DST ACCOUNT
+	cur.execute("""
+		UPDATE accounts SET balance = balance + %s WHERE account_id = %s;
+		""", (AMOUNT, DST_ACCOUNT,));
+	cur.execute("""
+		INSERT accounts SET balance = balance + %s WHERE account_id = %s;
+		""", (AMOUNT, DST_ACCOUNT,));
+	# Add Record to transactions table
+	cur.execute("""
+		INSERT INTO transactions (transaction_id, from_id, to_id, date_of_t, amount, type)
+		VALUES (%s,%s);
+		""", (1, SRC_ACCOUNT, DST_ACCOUNT, amount, "transfer"));
+	conn.commit()
 # Create an account (in case a user wants multiple accounts)
 
-def deposit():
+def deposit(): # This function currently isn't full working as I can't find a way to handle multiple account. Might limit a user to a single account for now. 
 	client_id = login()
 	while True:
 		print("How much would you like to deposit?")
@@ -110,15 +172,6 @@ def deposit():
 				BALANCE = ACCOUNT_BALANCE_DICT.get(ACCOUNT_CHOICE)
 				print(ACCOUNT + "" + BALANCE)
 
-	
-				
-		
-
-
-
-	
-# Credit
-#https://stackoverflow.com/questions/13496087/python-how-to-generate-a-12-digit-random-number
 def generateAccNumber(x, leading_zeroes=False):
     if x > 6000:
     	return ''.join([str(random.randint(0, 9)) for i in xrange(x)])
@@ -126,9 +179,10 @@ def generateAccNumber(x, leading_zeroes=False):
         return '{0:0{x}d}'.format(random.randint(0, 10**x-1), x=x)
 
 
-def getAccountInfo():
-	pass 
+# Credit
+#https://stackoverflow.com/questions/13496087/python-how-to-generate-a-12-digit-random-number
 
+transfer()
 
 def main():
 	print("connected")
@@ -139,7 +193,8 @@ def main():
 		print("2. Create an account \n")
 		print("3. Make a deposit \n")
 		print("4. Make a transfer \n")
-		print("5. Exit")
+		print("5. Get My Info")
+		print("6. Exit")
 		CHOICE = int(input())
 		match CHOICE:
 			case 1:
@@ -151,11 +206,11 @@ def main():
 			case 4:
 				transfer()
 			case 5:
+				getClientInfo()
+			case 6:
 				break
 			case _:
 				print("Unknown Option Choice: Please proivde an option from 1-5")
 				continue
 	cur.close()
 	conn.close()
-
-main()
