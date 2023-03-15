@@ -101,17 +101,31 @@ def create_account():
 	print("Account Created")
 
 def transfer():
+	client_id = login()
 	DST_ACCOUNT = input("Enter the account number for the destination account:")
-	cur.execute("""
-		SELECT client_id FROM accounts WHERE account_id = %s
-		VALUES (%s)
-		""", (DST_ACCOUNT,)); # Should the account ID be generated locally or on the DB?
-	conn.commit()
-	DST_ACCOUNT = cur.fetchone[0]
-	if DST_ACCOUNT == "":
-		print("Account does not exist, please try again")
-	SRC_ACCOUNT = get_accounts()
+	# cur.execute("""
+	#	SELECT client_id FROM accounts WHERE account_id = %s
+	#	VALUES (%s)
+	#	""", (DST_ACCOUNT,)); # Should the account ID be generated locally or on the DB?
+	#conn.commit()
+	#DST_ACCOUNT = cur.fetchone[0]
+	#if DST_ACCOUNT == "":
+	#	print("Account does not exist, please try again")
+	SRC_ACCOUNT = get_accounts(client_id)
 	SRC_BALANCE = getBalance(SRC_ACCOUNT)
+	AMOUNT = 0
+	while True:
+		print("How much would you like to deposit?")
+		user_input = input()
+		try:
+			AMOUNT = int(user_input)
+			break
+		except ValueError:
+			print("Not a number, please try again")
+			continue
+		if AMOUNT <= 0:
+			"You cannot transfer 0 or less, try again"
+			continue
 	if SRC_BALANCE <= 0:
 		print("You cannot make a transfer from this account, please visit the bank")
 		return
@@ -123,14 +137,11 @@ def transfer():
 	cur.execute("""
 		UPDATE accounts SET balance = balance + %s WHERE account_id = %s;
 		""", (AMOUNT, DST_ACCOUNT,));
-	cur.execute("""
-		INSERT accounts SET balance = balance + %s WHERE account_id = %s;
-		""", (AMOUNT, DST_ACCOUNT,));
 	# Add Record to transactions table
 	cur.execute("""
 		INSERT INTO transactions (transaction_id, from_id, to_id, date_of_t, amount, type)
 		VALUES (%s,%s);
-		""", (1, SRC_ACCOUNT, DST_ACCOUNT, amount, "transfer"));
+		""", (1, SRC_ACCOUNT, DST_ACCOUNT, AMOUNT, "transfer"));
 	conn.commit()
 # Create an account (in case a user wants multiple accounts)
 
